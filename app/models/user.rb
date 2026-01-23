@@ -44,6 +44,7 @@ class User < ApplicationRecord
 
   scope :without_default_names, -> { where.not(name: DEFAULT_NAME) }
   scope :non_suspended, -> { where(suspended_at: nil) }
+  scope :active_non_suspended, -> { where(active: true, suspended_at: nil) }
   scope :unclaimed_gumroad_imports, -> { where.not(order_id: nil).where(last_authenticated_at: nil) }
 
   has_secure_password validations: false
@@ -161,16 +162,15 @@ class User < ApplicationRecord
   end
 
   def total_message_count
-    Message.active
-           .joins(:room)
-           .where(creator_id: id)
-           .where("rooms.type != ?", "Rooms::Direct")
-           .count
+    # Use V2 stats with caching
+    user_stats = Stats::V2::Cache::StatsCache.fetch_user_stats(user_id: id, period: :all_time)
+    user_stats&.dig(:message_count) || 0
   end
 
   def message_rank
-    # Use the centralized ranking method from StatsService
-    StatsService.calculate_all_time_rank(id)
+    # Use V2 stats with caching
+    user_stats = Stats::V2::Cache::StatsCache.fetch_user_stats(user_id: id, period: :all_time)
+    user_stats&.dig(:rank) || User.where(active: true, suspended_at: nil).count
   end
 
   def subscribed_to_emails?

@@ -1,0 +1,75 @@
+<% @page_title = "Message Stats" %>
+<% @body_class = "sidebar stats-page" %>
+
+<% content_for :head do %>
+  <%= stylesheet_link_tag "application/stats" %>
+<% end %>
+
+<% content_for :nav do %>
+  <%= account_logo_tag if Current.account.logo.attached? %>
+  <%= tag.span class: "btn btn--reversed btn--faux room--current" do %>
+    <h1 class="room__contents txt-medium overflow-ellipsis">Message Stats</h1>
+  <% end %>
+  <%= link_back %>
+  <%= link_to stats_v2_dashboard_path, class: "btn d-hotwire-native-none" do %>
+    <%= image_tag("refresh.svg", aria: { hidden: "true" }, size: 20) %>
+    <span class="for-screen-reader">Refresh stats</span>
+  <% end %>
+<% end %>
+
+<% content_for :sidebar, sidebar_turbo_frame_tag(src: user_sidebar_path) %>
+
+<section class="full-width">
+  <h2 class="section-heading">Top Talkers</h2>
+  <div class="stats-grid margin-block">
+    <% Stats::V2::BaseController::PERIODS.each do |period| %>
+      <%= turbo_frame_tag "top_talkers_#{period}",
+                          src: stats_v2_dashboard_top_talkers_card_path(period: period) do %>
+        <div class="card grid-card">
+          <div class="card-body" style="text-align: center; padding: 2rem; color: #666;">
+            <%= render 'stats/v2/shared/loading' %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <h2 class="section-heading" style="margin-top: 2rem;">Stats</h2>
+  <div class="stats-grid margin-block">
+    <%= turbo_frame_tag "system_info",
+                        src: stats_v2_dashboard_system_info_card_path do %>
+      <div class="card grid-card">
+        <div class="card-body" style="text-align: center; padding: 2rem; color: #666;">
+          <%= render 'stats/v2/shared/loading' %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= turbo_frame_tag "top_rooms",
+                        src: stats_v2_dashboard_top_rooms_card_path do %>
+      <div class="card grid-card">
+        <div class="card-body" style="text-align: center; padding: 2rem; color: #666;">
+          <%= render 'stats/v2/shared/loading' %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= turbo_frame_tag "newest_members",
+                        src: stats_v2_dashboard_newest_members_card_path do %>
+      <div class="card grid-card">
+        <div class="card-body" style="text-align: center; padding: 2rem; color: #666;">
+          <%= render 'stats/v2/shared/loading' %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= turbo_frame_tag "message_history",
+                        src: stats_v2_dashboard_message_history_card_path do %>
+      <div class="card grid-card">
+        <div class="card-body" style="text-align: center; padding: 2rem; color: #666;">
+          <%= render 'stats/v2/shared/loading' %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</section>
